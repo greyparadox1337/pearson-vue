@@ -115,19 +115,40 @@ class StudentDataPreprocessor(BaseEstimator, TransformerMixin):
         X_df = pd.DataFrame(X) if not isinstance(X, pd.DataFrame) else X
         X_eng = self._engineer_features(X_df)
         
+        self.medians_ = X_eng.median()
         self.imputer = SimpleImputer(strategy='median')
         X_imputed = self.imputer.fit_transform(X_eng)
+        if not hasattr(self.imputer, '_fill_dtype'):
+            self.imputer._fill_dtype = np.float64
         
         self.scaler = StandardScaler()
-        self.scaler.fit(X_imputed)
+        X_scaled = self.scaler.fit_transform(X_imputed)
+        self.means_ = self.scaler.mean_
+        self.stds_ = self.scaler.scale_
         return self
 
     def transform(self, X):
         X_df = pd.DataFrame(X) if not isinstance(X, pd.DataFrame) else X
         X_eng = self._engineer_features(X_df)
         
-        X_imputed = self.imputer.transform(X_eng)
-        X_scaled = self.scaler.transform(X_imputed)
+        if hasattr(self, 'imputer') and self.imputer is not None:
+            # Fix scikit-learn version deserialization mismatch (_fill_dtype)
+            if not hasattr(self.imputer, '_fill_dtype'):
+                self.imputer._fill_dtype = np.float64
+            try:
+                X_imputed = self.imputer.transform(X_eng)
+            except AttributeError:
+                X_imputed = X_eng.fillna(getattr(self, 'medians_', X_eng.median())).values
+        else:
+            X_imputed = X_eng.fillna(getattr(self, 'medians_', X_eng.median())).values
+
+        if hasattr(self, 'scaler') and self.scaler is not None:
+            X_scaled = self.scaler.transform(X_imputed)
+        elif hasattr(self, 'means_') and hasattr(self, 'stds_'):
+            X_scaled = (X_imputed - self.means_) / self.stds_
+        else:
+            X_scaled = X_imputed
+
         return pd.DataFrame(X_scaled, columns=FEATURE_NAMES, index=X_df.index)
 
 def load_excel_dataset(filepath="student_habits_performance.csv.xlsx"):
