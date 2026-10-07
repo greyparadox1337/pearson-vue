@@ -131,21 +131,21 @@ class StudentDataPreprocessor(BaseEstimator, TransformerMixin):
         X_df = pd.DataFrame(X) if not isinstance(X, pd.DataFrame) else X
         X_eng = self._engineer_features(X_df)
         
-        if hasattr(self, 'imputer') and self.imputer is not None:
-            # Fix scikit-learn version deserialization mismatch (_fill_dtype)
-            if not hasattr(self.imputer, '_fill_dtype'):
-                self.imputer._fill_dtype = np.float64
-            try:
-                X_imputed = self.imputer.transform(X_eng)
-            except AttributeError:
-                X_imputed = X_eng.fillna(getattr(self, 'medians_', X_eng.median())).values
+        # 100% resilient imputation without touching private scikit-learn attributes
+        if hasattr(self, 'medians_') and self.medians_ is not None:
+            X_imputed = X_eng.fillna(self.medians_).values
+        elif hasattr(self, 'imputer') and hasattr(self.imputer, 'statistics_'):
+            X_imputed = X_eng.fillna(pd.Series(self.imputer.statistics_, index=FEATURE_NAMES)).values
         else:
-            X_imputed = X_eng.fillna(getattr(self, 'medians_', X_eng.median())).values
+            X_imputed = X_eng.fillna(0.0).values
 
-        if hasattr(self, 'scaler') and self.scaler is not None:
-            X_scaled = self.scaler.transform(X_imputed)
-        elif hasattr(self, 'means_') and hasattr(self, 'stds_'):
-            X_scaled = (X_imputed - self.means_) / self.stds_
+        # Scaling
+        if hasattr(self, 'means_') and hasattr(self, 'stds_'):
+            scale = np.where(self.stds_ == 0, 1.0, self.stds_)
+            X_scaled = (X_imputed - self.means_) / scale
+        elif hasattr(self, 'scaler') and hasattr(self.scaler, 'mean_'):
+            scale = np.where(self.scaler.scale_ == 0, 1.0, self.scaler.scale_)
+            X_scaled = (X_imputed - self.scaler.mean_) / scale
         else:
             X_scaled = X_imputed
 
