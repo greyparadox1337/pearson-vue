@@ -9,13 +9,11 @@ __pycache__/
 # Jupyter notebooks (optional – keep if you want them)
 .ipynb_checkpoints/
 
-# Large data files – keep a tiny sample locally, share the full file elsewhere
-*.xlsx
-*.csv
+# Large data files
+# (student_habits_performance.csv.xlsx is under 200KB so we keep it)
 
-# Model artefacts (large binaries)
-models/*.joblib
-reports/figures/*.png   # keep if you want the images versioned, otherwise comment out
+# Model artefacts
+# (best_model_pipeline.joblib is under 1MB so we keep it for deployment)
 
 # macOS / IDE artefacts
 .DS_Store
