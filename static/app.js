@@ -152,9 +152,15 @@ async function triggerPrediction() {
     const json = await res.json();
     if (json.status === 'success') {
       updatePredictionDisplay(json.data);
+    } else {
+      console.error('API Error:', json.message);
+      const titleEl = document.getElementById('predictedTitle');
+      const urgencyEl = document.getElementById('urgencyBadge');
+      if (titleEl) titleEl.innerText = 'Service Initializing...';
+      if (urgencyEl) urgencyEl.innerText = json.message || 'API Error';
     }
   } catch (err) {
-    console.error('Error during prediction call:', err);
+    console.error('Network Error during prediction call:', err);
   }
 }
 

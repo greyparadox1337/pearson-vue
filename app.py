@@ -11,19 +11,38 @@ import pandas as pd
 from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
 import joblib
 
-from src.preprocessing import LABEL_MAPPING, INVERSE_LABEL_MAPPING, FEATURE_NAMES
+from src.preprocessing import LABEL_MAPPING, INVERSE_LABEL_MAPPING, FEATURE_NAMES, StudentDataPreprocessor
 from src.predict import get_intervention_recommendation
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
 PIPELINE_PATH = os.path.join(os.path.dirname(__file__), "models", "best_model_pipeline.joblib")
+DATA_PATH = os.path.join(os.path.dirname(__file__), "student_habits_performance.csv.xlsx")
 METRICS_PATH = os.path.join(os.path.dirname(__file__), "reports", "model_comparison.json")
 FIGURES_DIR = os.path.join(os.path.dirname(__file__), "reports", "figures")
 
 pipeline = None
-if os.path.exists(PIPELINE_PATH):
-    pipeline = joblib.load(PIPELINE_PATH)
-    print("Inference pipeline loaded successfully.")
+
+def get_pipeline():
+    global pipeline
+    if pipeline is not None:
+        return pipeline
+    if os.path.exists(PIPELINE_PATH):
+        try:
+            pipeline = joblib.load(PIPELINE_PATH)
+            print("Inference pipeline loaded successfully.")
+            return pipeline
+        except Exception as e:
+            print(f"Error loading pipeline: {e}")
+    if os.path.exists(DATA_PATH):
+        print("Model file missing; training Random Forest pipeline on the fly...")
+        from src.train import train_random_forest
+        train_random_forest(data_path=DATA_PATH)
+        pipeline = joblib.load(PIPELINE_PATH)
+        return pipeline
+    return None
+
+pipeline = get_pipeline()
 
 @app.route('/')
 def index():
@@ -32,6 +51,10 @@ def index():
 @app.route('/api/predict', methods=['POST'])
 def predict():
     try:
+        active_pipeline = get_pipeline()
+        if active_pipeline is None:
+            return jsonify({'status': 'error', 'message': 'Model pipeline could not be loaded.'}), 500
+
         data = request.get_json(force=True)
         exam = float(data.get('mst_score', data.get('exam_score', 75.0)))
         attendance = float(data.get('attendance_rate', data.get('attendance_percentage', 80.0)))
@@ -58,8 +81,8 @@ def predict():
             'mental_health_rating': 7
         }])
 
-        pred_code = int(pipeline.predict(input_df)[0])
-        pred_probs = pipeline.predict_proba(input_df)[0]
+        pred_code = int(active_pipeline.predict(input_df)[0])
+        pred_probs = active_pipeline.predict_proba(input_df)[0]
         category = INVERSE_LABEL_MAPPING[pred_code]
 
         screen_time = social_media + netflix
@@ -82,6 +105,10 @@ def predict():
 @app.route('/api/batch-predict', methods=['POST'])
 def batch_predict():
     try:
+        active_pipeline = get_pipeline()
+        if active_pipeline is None:
+            return jsonify({'status': 'error', 'message': 'Model pipeline could not be loaded.'}), 500
+
         if 'file' not in request.files:
             return jsonify({'status': 'error', 'message': 'No file part provided'}), 400
         
@@ -98,8 +125,8 @@ def batch_predict():
         if unnamed:
             df = df.drop(columns=unnamed)
             
-        pred_codes = pipeline.predict(df)
-        pred_probs = pipeline.predict_proba(df)
+        pred_codes = active_pipeline.predict(df)
+        pred_probs = active_pipeline.predict_proba(df)
 
         df['predicted_category'] = [INVERSE_LABEL_MAPPING[c] for c in pred_codes]
         df['confidence_score'] = [round(float(np.max(p)) * 100, 2) for p in pred_probs]
