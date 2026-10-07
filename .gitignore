@@ -1,0 +1,23 @@
+# Python / virtual‑env
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.dist
+*.log
+
+# Jupyter notebooks (optional – keep if you want them)
+.ipynb_checkpoints/
+
+# Large data files – keep a tiny sample locally, share the full file elsewhere
+*.xlsx
+*.csv
+
+# Model artefacts (large binaries)
+models/*.joblib
+reports/figures/*.png   # keep if you want the images versioned, otherwise comment out
+
+# macOS / IDE artefacts
+.DS_Store
+.idea/
+.vscode/
