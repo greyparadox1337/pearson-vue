@@ -1,0 +1,183 @@
+{
+  "model_name": "Random Forest Classifier",
+  "dataset_source": "student_habits_performance.csv.xlsx",
+  "course_code": "UCS321",
+  "course_title": "AI Fundamentals for Engineers",
+  "champion_model": "Random Forest (Tuned \ud83c\udfc6)",
+  "best_hyperparameters": {
+    "criterion": "gini",
+    "max_depth": 10,
+    "min_samples_split": 2,
+    "n_estimators": 50
+  },
+  "feature_names": [
+    "exam_score",
+    "attendance_percentage",
+    "class_participation",
+    "weekly_self_study_hours",
+    "study_hours_per_day",
+    "sleep_hours",
+    "social_media_hours",
+    "netflix_hours",
+    "digital_distraction_hours",
+    "study_to_distraction_ratio",
+    "academic_composite",
+    "academic_consistency",
+    "exercise_frequency",
+    "mental_health_rating"
+  ],
+  "label_mapping": {
+    "Needs Improvement": 0,
+    "Average Performer": 1,
+    "High Performer": 2
+  },
+  "inverse_label_mapping": {
+    "0": "Needs Improvement",
+    "1": "Average Performer",
+    "2": "High Performer"
+  },
+  "feature_importances": {
+    "exam_score": 0.0458,
+    "attendance_percentage": 0.0423,
+    "class_participation": 0.0387,
+    "weekly_self_study_hours": 0.2805,
+    "study_hours_per_day": 0.046,
+    "sleep_hours": 0.0369,
+    "social_media_hours": 0.0465,
+    "netflix_hours": 0.0418,
+    "digital_distraction_hours": 0.0555,
+    "study_to_distraction_ratio": 0.2256,
+    "academic_composite": 0.0456,
+    "academic_consistency": 0.0484,
+    "exercise_frequency": 0.0205,
+    "mental_health_rating": 0.026
+  },
+  "model_comparison": {
+    "Random Forest (Baseline)": {
+      "cv_accuracy_mean": 0.7397,
+      "cv_accuracy_std": 0.0223,
+      "cv_f1_macro_mean": 0.6728,
+      "cv_f1_macro_std": 0.03,
+      "oob_score": 0.7334,
+      "test_accuracy": 0.705,
+      "test_f1_macro": 0.6358,
+      "test_f1_weighted": 0.7021,
+      "test_precision_macro": 0.6413,
+      "test_recall_macro": 0.6312,
+      "test_roc_auc_ovr": 0.8355,
+      "confusion_matrix": [
+        [
+          20,
+          13,
+          3
+        ],
+        [
+          10,
+          25,
+          17
+        ],
+        [
+          3,
+          13,
+          96
+        ]
+      ],
+      "classification_report": {
+        "Needs Improvement": {
+          "precision": 0.6060606060606061,
+          "recall": 0.5555555555555556,
+          "f1-score": 0.5797101449275363,
+          "support": 36.0
+        },
+        "Average Performer": {
+          "precision": 0.49019607843137253,
+          "recall": 0.4807692307692308,
+          "f1-score": 0.4854368932038835,
+          "support": 52.0
+        },
+        "High Performer": {
+          "precision": 0.8275862068965517,
+          "recall": 0.8571428571428571,
+          "f1-score": 0.8421052631578947,
+          "support": 112.0
+        },
+        "accuracy": 0.705,
+        "macro avg": {
+          "precision": 0.6412809637961767,
+          "recall": 0.6311558811558812,
+          "f1-score": 0.6357507670964382,
+          "support": 200.0
+        },
+        "weighted avg": {
+          "precision": 0.6999901653451349,
+          "recall": 0.705,
+          "f1-score": 0.7021403656883872,
+          "support": 200.0
+        }
+      }
+    },
+    "Random Forest (Tuned \ud83c\udfc6)": {
+      "cv_accuracy_mean": 0.6979,
+      "cv_accuracy_std": 0.005,
+      "cv_f1_macro_mean": 0.6979,
+      "cv_f1_macro_std": 0.005,
+      "oob_score": 0.7247,
+      "test_accuracy": 0.69,
+      "test_f1_macro": 0.6221,
+      "test_f1_weighted": 0.6849,
+      "test_precision_macro": 0.6309,
+      "test_recall_macro": 0.6154,
+      "test_roc_auc_ovr": 0.8277,
+      "confusion_matrix": [
+        [
+          20,
+          11,
+          5
+        ],
+        [
+          10,
+          23,
+          19
+        ],
+        [
+          2,
+          15,
+          95
+        ]
+      ],
+      "classification_report": {
+        "Needs Improvement": {
+          "precision": 0.625,
+          "recall": 0.5555555555555556,
+          "f1-score": 0.5882352941176471,
+          "support": 36.0
+        },
+        "Average Performer": {
+          "precision": 0.46938775510204084,
+          "recall": 0.4423076923076923,
+          "f1-score": 0.45544554455445546,
+          "support": 52.0
+        },
+        "High Performer": {
+          "precision": 0.7983193277310925,
+          "recall": 0.8482142857142857,
+          "f1-score": 0.8225108225108225,
+          "support": 112.0
+        },
+        "accuracy": 0.69,
+        "macro avg": {
+          "precision": 0.6309023609443778,
+          "recall": 0.6153591778591778,
+          "f1-score": 0.622063887060975,
+          "support": 200.0
+        },
+        "weighted avg": {
+          "precision": 0.6815996398559424,
+          "recall": 0.69,
+          "f1-score": 0.6849042551313954,
+          "support": 200.0
+        }
+      }
+    }
+  }
+}

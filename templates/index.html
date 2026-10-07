@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pearson VUE | Random Forest Student Classification System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Ambient background glow effects -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-logo">
+          <span class="logo-icon">RF</span>
+        </div>
+        <div class="brand-text">
+          <h1>Pearson VUE <span class="badge-tag">Random Forest AI</span></h1>
+          <p class="subtitle">Student Academic Performance Classification & Early Intervention System</p>
+        </div>
+      </div>
+
+      <div class="system-status">
+        <div class="status-indicator">
+          <span class="pulse-dot"></span>
+          <span class="status-text">Architecture: <strong>Random Forest Classifier (Ensemble Bagging)</strong></span>
+        </div>
+        <div class="accuracy-pill">
+          <span class="pill-label">OOB Score</span>
+          <span class="pill-value" id="headerF1">72.5%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="single-eval" id="tab-single">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        Live Student Assessment
+      </button>
+      <button class="nav-tab" data-tab="batch-eval" id="tab-batch">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        Cohort Batch Evaluation
+      </button>
+      <button class="nav-tab" data-tab="model-analytics" id="tab-analytics">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        Random Forest Diagnostics Hub
+      </button>
+      <button class="nav-tab" data-tab="data-pipeline" id="tab-pipeline">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+        Flow Diagram & Bagging Architecture
+      </button>
+    </nav>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="main-content">
+
+    <!-- ==================== TAB 1: LIVE ASSESSMENT ==================== -->
+    <section id="single-eval" class="tab-pane active">
+      <!-- Preset Archetypes -->
+      <div class="preset-banner">
+        <span class="preset-label">⚡ Quick Presets:</span>
+        <div class="preset-buttons">
+          <button class="preset-btn" id="presetHigh" onclick="applyPreset('high')">
+            <span class="dot green"></span> Dean's Honors (High Performer)
+          </button>
+          <button class="preset-btn" id="presetAvg" onclick="applyPreset('avg')">
+            <span class="dot yellow"></span> Standard Track (Average Performer)
+          </button>
+          <button class="preset-btn" id="presetAtRisk" onclick="applyPreset('atRisk')">
+            <span class="dot red"></span> Critical Alert (Needs Improvement)
+          </button>
+        </div>
+      </div>
+
+      <div class="grid-two-column">
+        <!-- Input Form Panel -->
+        <div class="glass-card panel-input">
+          <div class="card-header">
+            <h3>Student Performance Indicators</h3>
+            <span class="badge-subtitle">Random Forest Inference</span>
+          </div>
+
+          <form id="studentForm" onsubmit="event.preventDefault(); triggerPrediction();">
+            <!-- Metric 1: Mid-Semester Test (MST) / Exam Score -->
+            <div class="input-group">
+              <div class="input-header">
+                <label for="mstInput">Mid-Semester Exam Score (`exam_score`)</label>
+                <div class="input-val-badge">
+                  <input type="number" id="mstNum" min="0" max="100" step="0.5" value="78.5" onchange="syncInput('mst', this.value)">
+                  <span class="unit">/ 100</span>
+                </div>
+              </div>
+              <input type="range" class="slider" id="mstInput" min="0" max="100" step="0.5" value="78.5" oninput="syncInput('mst', this.value)">
+              <div class="slider-scale">
+                <span>0 (Fail)</span>
+                <span>55 (Pass)</span>
+                <span>100 (Distinction)</span>
+              </div>
+            </div>
+
+            <!-- Metric 2: Attendance Percentage -->
+            <div class="input-group">
+              <div class="input-header">
+                <label for="attInput">Attendance Record (`attendance_percentage`)</label>
+                <div class="input-val-badge">
+                  <input type="number" id="attNum" min="0" max="100" step="0.5" value="88.0" onchange="syncInput('att', this.value)">
+                  <span class="unit">%</span>
+                </div>
+              </div>
+              <input type="range" class="slider" id="attInput" min="0" max="100" step="0.5" value="88.0" oninput="syncInput('att', this.value)">
+              <div class="slider-scale">
+                <span>0%</span>
+                <span>75% (Min Req.)</span>
+                <span>100%</span>
+              </div>
+            </div>
+
+            <!-- Metric 3: Class Participation / Quizzes -->
+            <div class="input-group">
+              <div class="input-header">
+                <label for="quizInput">Class Participation / Quizzes (`class_participation`)</label>
+                <div class="input-val-badge">
+                  <input type="number" id="quizNum" min="0" max="10" step="0.1" value="7.5" onchange="syncInput('quiz', this.value)">
+                  <span class="unit">/ 10</span>
+                </div>
+              </div>
+              <input type="range" class="slider" id="quizInput" min="0" max="10" step="0.1" value="7.5" oninput="syncInput('quiz', this.value)">
+              <div class="slider-scale">
+                <span>0.0</span>
+                <span>5.0</span>
+                <span>10.0</span>
+              </div>
+            </div>
+
+            <!-- Metric 4: Weekly Self-Study Hours -->
+            <div class="input-group">
+              <div class="input-header">
+                <label for="asgInput">Weekly Self-Study Hours (`weekly_self_study_hours`)</label>
+                <div class="input-val-badge">
+                  <input type="number" id="asgNum" min="0" max="40" step="0.5" value="18.0" onchange="syncInput('asg', this.value)">
+                  <span class="unit">hrs/wk</span>
+                </div>
+              </div>
+              <input type="range" class="slider" id="asgInput" min="0" max="40" step="0.5" value="18.0" oninput="syncInput('asg', this.value)">
+              <div class="slider-scale">
+                <span>0 hrs</span>
+                <span>15 hrs</span>
+                <span>40 hrs</span>
+              </div>
+            </div>
+
+            <!-- Metric 5 & 6: Lifestyle Factors (Screen Time & Sleep) -->
+            <div class="sub-metrics-grid">
+              <div class="sub-metric-card">
+                <label for="asgComp">Daily Sleep Hours</label>
+                <div class="sub-input-row">
+                  <input type="number" id="asgComp" min="3" max="12" step="0.5" value="7.5" class="num-compact">
+                  <span class="unit">hrs/day</span>
+                </div>
+              </div>
+              <div class="sub-metric-card">
+                <label for="studyHours">Social Media Screen Time</label>
+                <div class="sub-input-row">
+                  <input type="number" id="studyHours" min="0" max="12" step="0.5" value="2.0" class="num-compact">
+                  <span class="unit">hrs/day</span>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" id="btnClassify">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              Classify Student with Random Forest
+            </button>
+          </form>
+        </div>
+
+        <!-- Output Prediction Panel -->
+        <div class="glass-card panel-result" id="predictionDisplay">
+          <div class="card-header">
+            <h3>Random Forest Prediction Intelligence</h3>
+            <span class="badge-status-pill" id="urgencyBadge">Evaluation Active</span>
+          </div>
+
+          <!-- Major Category Badge -->
+          <div class="result-hero" id="resultHero">
+            <div class="hero-status-wrapper">
+              <span class="category-indicator-ring" id="categoryRing"></span>
+              <div class="category-meta">
+                <span class="category-caption">Predicted Classification</span>
+                <h2 class="category-title" id="predictedTitle">High Performer</h2>
+              </div>
+            </div>
+            <div class="confidence-box">
+              <div class="confidence-circle" id="confidenceGauge">
+                <span class="conf-value" id="confidenceValue">88.5%</span>
+                <span class="conf-label">RF Confidence</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Probability Distribution Bars -->
+          <div class="distribution-section">
+            <h4>Ensemble Tree Vote Distribution</h4>
+            <div class="prob-bar-item">
+              <div class="prob-header">
+                <span class="prob-name"><span class="dot green"></span> High Performer</span>
+                <span class="prob-val" id="probHighVal">88.5%</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill green" id="barHigh" style="width: 88.5%;"></div>
+              </div>
+            </div>
+
+            <div class="prob-bar-item">
+              <div class="prob-header">
+                <span class="prob-name"><span class="dot yellow"></span> Average Performer</span>
+                <span class="prob-val" id="probAvgVal">8.5%</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill yellow" id="barAvg" style="width: 8.5%;"></div>
+              </div>
+            </div>
+
+            <div class="prob-bar-item">
+              <div class="prob-header">
+                <span class="prob-name"><span class="dot red"></span> Needs Improvement</span>
+                <span class="prob-val" id="probLowVal">3.0%</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill red" id="barLow" style="width: 3.0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature Interaction Insights -->
+          <div class="derived-metrics-grid">
+            <div class="derived-box">
+              <span class="d-label">Academic Composite</span>
+              <span class="d-val" id="derivedComposite">81.2</span>
+              <span class="d-sub">Weighted Index</span>
+            </div>
+            <div class="derived-box">
+              <span class="d-label">Study/Distraction Ratio</span>
+              <span class="d-val" id="derivedEngagement">4.5</span>
+              <span class="d-sub">Study ÷ Screen</span>
+            </div>
+            <div class="derived-box">
+              <span class="d-label">Intervention Urgency</span>
+              <span class="d-val green-text" id="derivedUrgency">Low</span>
+              <span class="d-sub">Priority Level</span>
+            </div>
+          </div>
+
+          <!-- Tailored Educational Recommendations -->
+          <div class="recommendations-box">
+            <h4>Pearson VUE Prescriptive Advisement</h4>
+            <ul class="recommendation-list" id="recommendationList">
+              <li>Encourage participation in advanced honors tracks and research projects.</li>
+              <li>Nominate for student peer tutor / laboratory assistant fellowship.</li>
+              <li>Prepare for Pearson VUE industry certification testing.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: BATCH EVALUATION ==================== -->
+    <section id="batch-eval" class="tab-pane">
+      <div class="glass-card">
+        <div class="batch-header-flex">
+          <div>
+            <h3>Cohort Batch Classification</h3>
+            <p class="section-desc">Upload a CSV or Excel dataset of student records to classify entire testing cohorts simultaneously using the trained Random Forest model.</p>
+          </div>
+          <a href="/api/download-sample-csv" class="btn btn-secondary" id="btnDownloadSample">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Download Sample Cohort CSV
+          </a>
+        </div>
+
+        <!-- Upload Dropzone -->
+        <div class="dropzone" id="batchDropzone" onclick="document.getElementById('csvFileInput').click()">
+          <input type="file" id="csvFileInput" accept=".csv,.xlsx" style="display: none;" onchange="handleFileUpload(event)">
+          <div class="dropzone-content">
+            <div class="drop-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            </div>
+            <h4>Click to browse or drag and drop student CSV / Excel file</h4>
+            <p>Compatible with <code>student_habits_performance.csv.xlsx</code> features</p>
+          </div>
+        </div>
+
+        <!-- Batch Results Section -->
+        <div id="batchResultsWrapper" style="display: none; margin-top: 2rem;">
+          <div class="batch-metrics-row">
+            <div class="batch-stat-card">
+              <span class="stat-num" id="batchTotalCount">0</span>
+              <span class="stat-label">Students Evaluated</span>
+            </div>
+            <div class="batch-stat-card green-border">
+              <span class="stat-num green-text" id="batchHighCount">0</span>
+              <span class="stat-label">High Performers (<span id="batchHighPct">0%</span>)</span>
+            </div>
+            <div class="batch-stat-card yellow-border">
+              <span class="stat-num yellow-text" id="batchAvgCount">0</span>
+              <span class="stat-label">Average Performers (<span id="batchAvgPct">0%</span>)</span>
+            </div>
+            <div class="batch-stat-card red-border">
+              <span class="stat-num red-text" id="batchLowCount">0</span>
+              <span class="stat-label">Needs Improvement (<span id="batchLowPct">0%</span>)</span>
+            </div>
+          </div>
+
+          <div class="batch-actions-bar">
+            <h4>Scored Cohort Sample Preview (Top 15 Records)</h4>
+            <button class="btn btn-primary" id="btnDownloadScoredCsv" onclick="downloadScoredCSV()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Download Complete Scored CSV
+            </button>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table" id="batchPreviewTable">
+              <thead>
+                <tr>
+                  <th>Student ID</th>
+                  <th>Exam Score</th>
+                  <th>Attendance %</th>
+                  <th>Participation</th>
+                  <th>Study Hours</th>
+                  <th>Predicted Classification</th>
+                  <th>Model Confidence</th>
+                </tr>
+              </thead>
+              <tbody id="batchTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: RANDOM FOREST DIAGNOSTICS HUB ==================== -->
+    <section id="model-analytics" class="tab-pane">
+      <div class="glass-card">
+        <h3>Random Forest Model Optimization Benchmark</h3>
+        <p class="section-desc">Comparison between Baseline Random Forest and Hyperparameter-Tuned Random Forest with Out-of-Bag (OOB) error estimation and 5-Fold Stratified Cross-Validation.</p>
+
+        <div class="table-container">
+          <table class="data-table leaderboard-table" id="leaderboardTable">
+            <thead>
+              <tr>
+                <th>Configuration</th>
+                <th>5-Fold CV Accuracy</th>
+                <th>Out-of-Bag (OOB) Score</th>
+                <th>Test Accuracy</th>
+                <th>Macro F1-Score</th>
+                <th>Macro Precision</th>
+                <th>Macro Recall</th>
+                <th>ROC-AUC (OvR)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardBody">
+              <!-- Dynamically populated via API -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Diagnostic Figures Grid -->
+      <div class="figures-grid">
+        <div class="glass-card figure-card">
+          <h4>Random Forest Benchmark: Baseline vs. Tuned</h4>
+          <p class="card-caption">Test Accuracy, Macro F1, OOB Score, and ROC-AUC</p>
+          <img src="/reports/figures/model_comparison_benchmark.png" alt="Random Forest Benchmark" class="diagnostic-img" id="imgBenchmark">
+        </div>
+
+        <div class="glass-card figure-card">
+          <h4>Random Forest Confusion Matrix</h4>
+          <p class="card-caption">Holdout Set Student Counts and Normalized Recall Rates</p>
+          <img src="/reports/figures/confusion_matrix.png" alt="Confusion Matrix" class="diagnostic-img" id="imgConfusion">
+        </div>
+
+        <div class="glass-card figure-card">
+          <h4>Multi-Class ROC Curves (One-vs-Rest)</h4>
+          <p class="card-caption">Sensitivity vs False Positive Rate for each Student Performance Class</p>
+          <img src="/reports/figures/roc_auc_curves.png" alt="ROC Curves" class="diagnostic-img" id="imgRoc">
+        </div>
+
+        <div class="glass-card figure-card">
+          <h4>Random Forest Feature Importance (MDI)</h4>
+          <p class="card-caption">Relative Gini Impurity Reduction across Student Habits & Test Scores</p>
+          <img src="/reports/figures/feature_importance.png" alt="Feature Importance" class="diagnostic-img" id="imgImportance">
+        </div>
+
+        <div class="glass-card figure-card" style="grid-column: 1 / -1;">
+          <h4>Decision Tree Sample from the Random Forest Ensemble</h4>
+          <p class="card-caption">Visualization of Estimator Tree 0 illustrating hierarchical splitting rules within the ensemble</p>
+          <img src="/reports/figures/decision_tree_structure.png" alt="Decision Tree Estimator" class="diagnostic-img" id="imgTree">
+        </div>
+
+        <div class="glass-card figure-card" style="grid-column: 1 / -1;">
+          <h4>Unit 4: PCA 2D Cluster Projection of Student Records</h4>
+          <p class="card-caption">Principal Component Analysis confirming geometric separation of student trajectories</p>
+          <img src="/reports/figures/pca_clusters.png" alt="PCA Clusters" class="diagnostic-img" id="imgPca">
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: ARCHITECTURE & FLOW DIAGRAM ==================== -->
+    <section id="data-pipeline" class="tab-pane">
+      <div class="glass-card">
+        <h3>Random Forest Pipeline Flow Diagram & Architecture</h3>
+        <p class="section-desc">Documented as per the mandatory rubric: Pre-processing, Bagging Architecture, and Evaluation steps clearly outlined.</p>
+
+        <!-- Official Flow Diagram Display -->
+        <div style="margin: 1.5rem 0; text-align: center;">
+          <img src="/reports/figures/project_flowchart.png" alt="Project Flow Diagram" style="max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border-light); box-shadow: var(--shadow-card);">
+        </div>
+
+        <div class="tech-specs-grid">
+          <div class="spec-card">
+            <h4>UCS321 Unit 2: Data Preprocessing Protocol</h4>
+            <ul>
+              <li><strong>Missing Values:</strong> Imputed 91 missing entries in <code>parental_education_level</code> using mode, and continuous features using median.</li>
+              <li><strong>Target Leakage Prevention:</strong> Excluded <code>total_score</code> to build an authentic Early Warning System.</li>
+              <li><strong>Normalization:</strong> <code>StandardScaler</code> ($\mu=0, \sigma=1$) strictly fitted on training split ($N=799$).</li>
+              <li><strong>Feature Engineering:</strong> Digital distraction screen time, study-to-distraction ratio, and academic composite index.</li>
+            </ul>
+          </div>
+          <div class="spec-card">
+            <h4>UCS321 Unit 3: Random Forest Ensemble Architecture</h4>
+            <ul>
+              <li><strong>Bootstrap Aggregation (Bagging):</strong> Trains $B=50$ independent decision trees on bootstrap random samples with replacement.</li>
+              <li><strong>Random Feature Subsets:</strong> Samples $m \approx \sqrt{p}$ features at each split to decorrelate individual trees.</li>
+              <li><strong>Out-of-Bag (OOB) Estimation:</strong> Uses out-of-bag samples (~37% of data per tree) to estimate generalization error without a separate validation set.</li>
+              <li><strong>Hyperparameter Tuning:</strong> Optimized via <code>GridSearchCV</code> over <code>max_depth</code>, <code>min_samples_split</code>, and <code>criterion</code>.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>UCS321: AI Fundamentals for Engineers • Pearson VUE Random Forest Student Classification System</p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
